@@ -1,0 +1,79 @@
+From 72feb84d2cd710486b0f8850814f3ef2dcac3b82 Mon Sep 17 00:00:00 2001
+From: GitFASTBOOT <ahmedshahinx0x@gmail.com>
+Date: Mon, 5 May 2025 13:18:58 +0800
+Subject: [PATCH] kernel_module_loader: rmmod Motorola touch-related modules
+
+Signed-off-by: GitFASTBOOT <ahmedshahinx0x@gmail.com>
+---
+ Android.mk               |  3 +++
+ kernel_module_loader.cpp | 35 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 38 insertions(+)
+
+diff --git a/Android.mk b/Android.mk
+index b30f0450e..4f786e838 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -401,6 +401,9 @@ endif
+ ifeq ($(TW_MOTOROLA_TOUCH_PERMISSION_FIX), true)
+ 	LOCAL_CFLAGS += -DTW_MOTOROLA_TOUCH_PERMISSION_FIX
+ endif
++ifeq ($(TW_MOTOROLA_TOUCH_RMMOD), true)
++	LOCAL_CFLAGS += -DTW_MOTOROLA_TOUCH_RMMOD
++endif
+ ifneq ($(TW_CUSTOM_CPU_TEMP_PATH),)
+ 	LOCAL_CFLAGS += -DTW_CUSTOM_CPU_TEMP_PATH=$(TW_CUSTOM_CPU_TEMP_PATH)
+ endif
+
+diff --git a/kernel_module_loader.cpp b/kernel_module_loader.cpp
+index e9ec46de1..c245eabc1 100644
+--- a/kernel_module_loader.cpp
++++ b/kernel_module_loader.cpp
+@@ -58,6 +58,41 @@ bool KernelModuleLoader::Load_Vendor_Modules() {
+ 	vendor_module_dirs.push_back(vendor_base_dir + gki);
+ #endif
+
++#ifdef TW_MOTOROLA_TOUCH_RMMOD
++	{
++		std::string result;
++		const char* modules[] = {
++			"altmode-glink",
++			"dwc3-msm",
++			"focaltech_0flash_v2_mmi",
++			"fsa4480-i2c",
++			"gh_irq_lend",
++			"gh_mem_notifier",
++			"goodix_fod_mmi",
++			"hdcp",
++			"ili9882_mmi",
++			"mmi_annotate",
++			"mmi_info",
++			"mmi_relay",
++			"msm-mmrm",
++			"msm_drm",
++			"msm_ext_display",
++			"panel_event_notifier",
++			"pdr_interface",
++			"pmic_glink",
++			"qcom_glink",
++			"qcom_glink_smem",
++			"qcom_smd",
++			"qmi_helpers",
++			"qseecom-mod",
++			"rproc_qcom_common",
++			"sensors_class",
++			"smcinvoke_mod",
++			"touchscreen_mmi",
++			"ucsi_glink"
++		};
++		for (const auto& mod : modules) {
++			std::string cmd = std::string("rmmod -f ") + mod;
++			TWFunc::Exec_Cmd(cmd, result, false);
++		}
++	}
++#endif
+
+ 	TWFunc::RunFoxScript("/system/bin/beforemodules.sh", "");
+
+ 	Check_Loaded_Kernel_Modules();
+-- 
+2.49.0
